@@ -10,6 +10,23 @@ Install the required Python packages with pip:
 pip install -r requirements.txt
 ```
 
+You can also perform an offline installation using the provided
+`setup.sh` script:
+
+```bash
+./setup.sh
+```
+
+This script installs packages from wheel files located in the `wheels/`
+directory. Make sure all the required wheels are available in this folder
+before running it.
+
+After installation, run the test suite to verify the environment:
+
+```bash
+pytest
+```
+
 ## Usage
 
 ### Generate the CWT image dataset
