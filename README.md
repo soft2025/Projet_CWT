@@ -51,3 +51,12 @@ The trained model is saved to `<output-dir>/model.pth`.
 The script will train a Swin Transformer on the dataset and evaluate it on a
 held‑out test set.
 
+### Denoising model checkpoint
+
+The dataset generation step relies on a pretrained denoising network. Download the checkpoint before running the scripts:
+
+```bash
+./scripts/download_denoising_checkpoint.sh
+```
+
+The script stores the file at `checkpoints/denoising_model.pth`. You can also download the file manually from `https://example.com/path/to/denoising_model.pth` and place it at that location.
