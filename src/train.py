@@ -58,7 +58,8 @@ def train_model(
             correct += (predicted == labels).sum().item()
             total += labels.size(0)
         train_acc = 100.0 * correct / total
-        print(f"Train — Epoch {epoch+1}: Loss={running_loss:.4f} Acc={train_acc:.2f}%")
+        avg_loss = running_loss / len(train_loader)
+        print(f"Train — Epoch {epoch+1}: Loss={avg_loss:.4f} Acc={train_acc:.2f}%")
         model.eval()
         val_correct = 0
         val_total = 0
