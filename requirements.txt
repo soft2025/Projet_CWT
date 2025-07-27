@@ -1,0 +1,12 @@
+torch
+torchvision
+timm
+scikit-image
+pywavelets
+scipy
+numpy
+matplotlib
+seaborn
+scikit-learn
+hawk-data @ git+https://github.com/MDCHAMP/hawk-data
+

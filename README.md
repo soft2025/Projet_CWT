@@ -2,6 +2,14 @@
 
 This repository reorganizes the original notebook into reusable Python modules.
 
+## Installation
+
+Install the required Python packages with pip:
+
+```bash
+pip install -r requirements.txt
+```
+
 ## Usage
 
 Prepare your dataset of CWT images arranged in sub‑folders for each class. Then
