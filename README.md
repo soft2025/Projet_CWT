@@ -12,6 +12,17 @@ pip install -r requirements.txt
 
 ## Usage
 
+### Generate the CWT image dataset
+
+If you start from the raw *hawk* measurements you can create the image dataset
+using the CLI provided in `scripts/generate_dataset.py`:
+
+```bash
+python scripts/generate_dataset.py /path/to/hawk_data images_cwt_224x224_rgb
+```
+
+### Train the model
+
 Prepare your dataset of CWT images arranged in sub‑folders for each class. Then
 run the training script:
 
@@ -39,3 +50,4 @@ The trained model is saved to `<output-dir>/model.pth`.
 
 The script will train a Swin Transformer on the dataset and evaluate it on a
 held‑out test set.
+
