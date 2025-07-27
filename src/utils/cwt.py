@@ -69,11 +69,31 @@ def resize_vertical_all_repeat(images_cwt: np.ndarray, target_height: int = 224)
 
 
 def save_images(images: List[np.ndarray], output_dir: str, test_name: str, classe: str) -> None:
-    """Save CWT images to ``output_dir`` grouped by class."""
+    """Denoise and save CWT images using the global PyTorch ``model``."""
+
+    import torch  # imported lazily to avoid mandatory dependency for other utils
+
     class_dir = os.path.join(output_dir, classe)
     os.makedirs(class_dir, exist_ok=True)
+
     for i, img in enumerate(images):
-        img_uint8 = np.clip(img * 255, 0, 255).astype(np.uint8)
+        # ``images`` are 10x224 arrays – resize vertically if needed
+        if img.shape[0] != 224:
+            img = resize_vertical_all_repeat(img, target_height=224)
+
+        # normalize to [0, 1]
+        img = np.clip(img, 0.0, 1.0).astype(np.float32)
+
+        # prepare tensor [1, 1, 224, 224]
+        tensor = torch.from_numpy(img).unsqueeze(0).unsqueeze(0).to(device)
+
+        with torch.no_grad():
+            sigma = torch.full_like(tensor, 15 / 255, device=device)
+            denoised = model(tensor, sigma)
+
+        denoised_img = denoised.squeeze().cpu().numpy()
+        img_uint8 = np.clip(denoised_img * 255, 0, 255).astype(np.uint8)
+
         filename = f"{test_name.replace('/', '_')}_{i:02d}.png"
         path = os.path.join(class_dir, filename)
         imsave(path, img_uint8)
