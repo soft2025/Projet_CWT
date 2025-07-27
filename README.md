@@ -16,8 +16,26 @@ Prepare your dataset of CWT images arranged in sub‑folders for each class. The
 run the training script:
 
 ```bash
-python main.py --data-dir path/to/images_cwt_224x224_rgb --epochs 25
+python main.py \
+  --data-dir path/to/images_cwt_224x224_rgb \
+  --output-dir training_runs/run1 \
+  --epochs 25
 ```
+
+The dataset directory must follow this structure:
+
+```
+images_cwt_224x224_rgb/
+├── class_a/
+│   ├── img1.png
+│   └── ...
+├── class_b/
+│   └── ...
+└── class_n/
+    └── ...
+```
+
+The trained model is saved to `<output-dir>/model.pth`.
 
 The script will train a Swin Transformer on the dataset and evaluate it on a
 held‑out test set.

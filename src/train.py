@@ -29,8 +29,15 @@ def create_dataloaders(root_dir: str, batch_size: int = 32,
     return train_loader, val_loader, test_loader
 
 
-def train_model(model: torch.nn.Module, train_loader: DataLoader, val_loader: DataLoader,
-                device: torch.device, num_epochs: int = 10, lr: float = 1e-4) -> torch.nn.Module:
+def train_model(
+    model: torch.nn.Module,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    device: torch.device,
+    num_epochs: int = 10,
+    lr: float = 1e-4,
+    save_path: str | None = None,
+) -> torch.nn.Module:
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
@@ -64,4 +71,9 @@ def train_model(model: torch.nn.Module, train_loader: DataLoader, val_loader: Da
                 val_total += labels.size(0)
         val_acc = 100.0 * val_correct / val_total
         print(f"Validation — Acc={val_acc:.2f}%")
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        torch.save(model.state_dict(), save_path)
+
     return model
