@@ -10,6 +10,27 @@ Install the required Python packages with pip:
 pip install -r requirements.txt
 ```
 
+### Providing `hawk-data` locally
+
+The `hawk-data` package is only needed when running
+`scripts/generate_dataset.py`.  In an offline environment you can supply this
+dependency in one of two ways:
+
+1. **Git submodule**
+
+   Add the repository as a submodule and install it in editable mode:
+
+   ```bash
+   git submodule add https://github.com/MDCHAMP/hawk-data external/hawk-data
+   pip install -e external/hawk-data
+   ```
+
+2. **Pre‑built wheel**
+
+   Build or download a wheel for `hawk-data`, place it under `wheels/` and run
+   `setup.sh`.  The script will install the wheel along with the other local
+   packages.
+
 ## Usage
 
 ### Generate the CWT image dataset
