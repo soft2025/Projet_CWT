@@ -41,6 +41,11 @@ def train_model(
     model.to(device)
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.AdamW(filter(lambda p: p.requires_grad, model.parameters()), lr=lr)
+    num_classes = getattr(model, "num_classes", None)
+    if num_classes is None and hasattr(model, "head") and hasattr(model.head, "out_features"):
+        num_classes = model.head.out_features
+    if num_classes is None:
+        raise ValueError("Unable to determine number of classes from the model")
     for epoch in range(num_epochs):
         model.train()
         running_loss = 0.0
@@ -48,6 +53,8 @@ def train_model(
         total = 0
         for inputs, labels in tqdm(train_loader, desc=f"[Epoch {epoch+1}]"):
             inputs, labels = inputs.to(device), labels.to(device)
+            assert torch.all((labels >= 0) & (labels < num_classes)), (
+                f"Labels out of range [0, {num_classes - 1}]")
             optimizer.zero_grad()
             outputs = model(inputs)
             loss = criterion(outputs, labels)

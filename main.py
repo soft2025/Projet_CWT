@@ -27,7 +27,9 @@ def main():
     train_loader, val_loader, test_loader = create_dataloaders(
         args.data_dir, batch_size=args.batch_size
     )
-    model = get_swin_tiny_partial_finetune()
+    num_classes = len(train_loader.dataset.dataset.class_to_idx)
+    print(train_loader.dataset.dataset.class_to_idx)
+    model = get_swin_tiny_partial_finetune(num_classes=num_classes)
 
     os.makedirs(args.output_dir, exist_ok=True)
     model_path = os.path.join(args.output_dir, 'model.pth')

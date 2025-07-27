@@ -9,6 +9,7 @@ def get_swin_tiny_partial_finetune(num_classes: int = 4, pretrained: bool = True
         pretrained=pretrained,
         num_classes=num_classes,
     )
+    model.num_classes = num_classes
     for param in model.parameters():
         param.requires_grad = False
     for stage_idx in unfreeze_stages:
