@@ -13,6 +13,7 @@ except Exception as e:  # pragma: no cover - optional dependency
 
 import torch
 from src.utils.cwt import make_image, save_images
+from src.models.denoising_model import load_denoising_model
 
 TESTS_PER_CLASS: Dict[str, List[str]] = {
     "HS": [
@@ -83,9 +84,10 @@ def main() -> None:
         raise RuntimeError("hawk-data package is required to generate the dataset")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    # ``model`` should be defined by the caller. Here we assume an identity model
-    # if none is provided.
-    model = torch.nn.Identity()
+    # load denoising model defined in ``src.models.denoising_model``
+    model = load_denoising_model()
+    model.to(device)
+    model.eval()
 
     data = FST(args.data_dir)
     os.makedirs(args.output_dir, exist_ok=True)
