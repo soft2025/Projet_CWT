@@ -12,8 +12,8 @@ def get_swin_tiny_partial_finetune(num_classes: int = 4, pretrained: bool = True
     for param in model.parameters():
         param.requires_grad = False
     for stage_idx in unfreeze_stages:
-        stage = getattr(model, f'layers.{stage_idx}', None)
-        if stage:
+        if 0 <= stage_idx < len(model.layers):
+            stage = model.layers[stage_idx]
             for param in stage.parameters():
                 param.requires_grad = True
     for param in model.head.parameters():
