@@ -4,7 +4,7 @@ import numpy as np
 import pywt
 from skimage.transform import resize
 from sklearn.preprocessing import minmax_scale
-from skimage.io import imsave, imread
+from skimage.io import imsave
 
 
 def compute_scalogram(signal: np.ndarray, wavelet: str = "morl", scales: np.ndarray = None,
@@ -68,32 +68,52 @@ def resize_vertical_all_repeat(images_cwt: np.ndarray, target_height: int = 224)
     return repeated
 
 
-def save_images(images: List[np.ndarray], output_dir: str, test_name: str, classe: str) -> None:
-    """Denoise and save CWT images using the global PyTorch ``model``."""
+def make_image(
+    segment: np.ndarray,
+    model: "torch.nn.Module",
+    device: "torch.device",
+    imgsize: int = 224,
+    wavelet: str = "morl",
+    scales: np.ndarray | None = None,
+) -> np.ndarray:
+    """Return a denoised CWT image for a 10-channel signal segment."""
 
-    import torch  # imported lazily to avoid mandatory dependency for other utils
+    import torch  # lazy import
+
+    if scales is None:
+        scales = np.arange(1, 65)
+    scalograms = []
+    for ch in segment:
+        coefs, _ = pywt.cwt(ch, scales, wavelet)
+        scalogram = np.abs(coefs)
+        energy = scalogram.mean(axis=0)
+        energy = minmax_scale(energy)
+        energy_resized = resize(energy, (imgsize,), mode="reflect", preserve_range=True)
+        scalograms.append(energy_resized)
+
+    img = np.array(scalograms)
+    if img.shape[0] != imgsize:
+        img = resize_vertical_all_repeat(img, target_height=imgsize)
+
+    img = np.clip(img, 0.0, 1.0).astype(np.float32)
+    tensor = torch.from_numpy(img).unsqueeze(0).unsqueeze(0).to(device)
+
+    with torch.no_grad():
+        sigma = torch.full_like(tensor, 15 / 255, device=device)
+        denoised = model(tensor, sigma)
+
+    denoised_img = denoised.squeeze().cpu().numpy()
+    img_uint8 = np.clip(denoised_img * 255, 0, 255).astype(np.uint8)
+    return img_uint8
+
+
+def save_images(images: List[np.ndarray], output_dir: str, test_name: str, classe: str) -> None:
+    """Save pre-computed CWT images to disk."""
 
     class_dir = os.path.join(output_dir, classe)
     os.makedirs(class_dir, exist_ok=True)
 
     for i, img in enumerate(images):
-        # ``images`` are 10x224 arrays – resize vertically if needed
-        if img.shape[0] != 224:
-            img = resize_vertical_all_repeat(img, target_height=224)
-
-        # normalize to [0, 1]
-        img = np.clip(img, 0.0, 1.0).astype(np.float32)
-
-        # prepare tensor [1, 1, 224, 224]
-        tensor = torch.from_numpy(img).unsqueeze(0).unsqueeze(0).to(device)
-
-        with torch.no_grad():
-            sigma = torch.full_like(tensor, 15 / 255, device=device)
-            denoised = model(tensor, sigma)
-
-        denoised_img = denoised.squeeze().cpu().numpy()
-        img_uint8 = np.clip(denoised_img * 255, 0, 255).astype(np.uint8)
-
         filename = f"{test_name.replace('/', '_')}_{i:02d}.png"
         path = os.path.join(class_dir, filename)
-        imsave(path, img_uint8)
+        imsave(path, img)

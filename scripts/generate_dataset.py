@@ -11,7 +11,8 @@ try:
 except Exception as e:  # pragma: no cover - optional dependency
     FST = None  # type: ignore
 
-from src.utils.cwt import generate_cwt_image, save_images
+import torch
+from src.utils.cwt import make_image, save_images
 
 TESTS_PER_CLASS: Dict[str, List[str]] = {
     "HS": [
@@ -81,6 +82,11 @@ def main() -> None:
     if FST is None:
         raise RuntimeError("hawk-data package is required to generate the dataset")
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    # ``model`` should be defined by the caller. Here we assume an identity model
+    # if none is provided.
+    model = torch.nn.Identity()
+
     data = FST(args.data_dir)
     os.makedirs(args.output_dir, exist_ok=True)
 
@@ -89,7 +95,16 @@ def main() -> None:
             print(f"Processing {test} ({clazz})")
             group = data[test]
             signals = extract_signal(group)
-            images = generate_cwt_image(signals, target_width=args.width)
+            total_points = signals.shape[1]
+            margin = int(0.05 * total_points)
+            useful_signal = signals[:, margin: total_points - margin]
+            win_size = 2048
+            num_segments = useful_signal.shape[1] // win_size
+            images = []
+            for k in range(num_segments):
+                segment = useful_signal[:, k * win_size:(k + 1) * win_size]
+                img = make_image(segment, model, device, imgsize=args.width)
+                images.append(img)
             save_images(images, args.output_dir, test, clazz)
             print(f"  -> saved {len(images)} images")
 

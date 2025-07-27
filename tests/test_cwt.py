@@ -1,5 +1,6 @@
 import numpy as np
-from src.utils.cwt import compute_scalogram, resize_vertical_all_repeat
+import torch
+from src.utils.cwt import compute_scalogram, resize_vertical_all_repeat, make_image
 
 
 def test_compute_scalogram_shape_and_range():
@@ -16,3 +17,17 @@ def test_resize_vertical_all_repeat():
     # rows should repeat in order
     assert np.array_equal(resized[0:3], img)
     assert np.array_equal(resized[3:], img[:2])
+
+
+class _IdentityModel(torch.nn.Module):
+    def forward(self, x, sigma):  # type: ignore[override]
+        return x
+
+
+def test_make_image_basic_shape():
+    segment = np.random.randn(10, 2048)
+    model = _IdentityModel()
+    device = torch.device("cpu")
+    img = make_image(segment, model, device, imgsize=64)
+    assert img.shape == (64, 64)
+    assert img.dtype == np.uint8
