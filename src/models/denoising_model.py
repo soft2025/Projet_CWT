@@ -22,7 +22,13 @@ class SimpleDenoiser(nn.Module):
 
 
 def load_denoising_model(checkpoint_path: str = "checkpoints/denoising_model.pth") -> nn.Module:
-    """Load and return the pretrained denoising model."""
+    """Load and return the pretrained denoising model if available.
+
+    If the checkpoint is missing an untrained :class:`SimpleDenoiser` is returned
+    and a warning is printed. This keeps the rest of the pipeline usable even
+    without the pretrained weights.
+    """
+
     model = SimpleDenoiser()
     if os.path.exists(checkpoint_path):
         state = torch.load(checkpoint_path, map_location="cpu")
@@ -30,5 +36,8 @@ def load_denoising_model(checkpoint_path: str = "checkpoints/denoising_model.pth
             state = state["state_dict"]
         model.load_state_dict(state)
     else:
-        raise FileNotFoundError(f"Checkpoint not found: {checkpoint_path}")
+        print(
+            f"Warning: {checkpoint_path} not found. Using an untrained SimpleDenoiser."
+            " See the README for instructions on downloading the pretrained model."
+        )
     return model
