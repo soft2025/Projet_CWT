@@ -10,6 +10,23 @@ Install the required Python packages with pip:
 pip install -r requirements.txt
 ```
 
+You can also perform an offline installation using the provided
+`setup.sh` script:
+
+```bash
+./setup.sh
+```
+
+This script installs packages from wheel files located in the `wheels/`
+directory. Make sure all the required wheels are available in this folder
+before running it.
+
+After installation, run the test suite to verify the environment:
+
+```bash
+pytest
+```
+
 ## Usage
 
 ### Generate the CWT image dataset
@@ -51,12 +68,21 @@ The trained model is saved to `<output-dir>/model.pth`.
 The script will train a Swin Transformer on the dataset and evaluate it on a
 held‑out test set.
 
-### Denoising model checkpoint
 
-The dataset generation step relies on a pretrained denoising network. Download the checkpoint before running the scripts:
+### Pretrained denoising model
+
+The dataset generation utilities rely on a small denoising network whose
+weights are **not** tracked in this repository.  To use the provided scripts you
+need the file `checkpoints/denoising_model.pth`.
+
+You can download it from the project's release page:
 
 ```bash
-./scripts/download_denoising_checkpoint.sh
+bash scripts/download_denoising_model.sh
 ```
 
-The script stores the file at `checkpoints/denoising_model.pth`. You can also download the file manually from `https://example.com/path/to/denoising_model.pth` and place it at that location.
+This script downloads the checkpoint from the release and stores it in the
+`checkpoints/` directory.  If the file is missing, code that uses
+`load_denoising_model` will fall back to an untrained network and print a
+warning.
+
