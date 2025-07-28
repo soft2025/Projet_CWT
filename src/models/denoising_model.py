@@ -30,14 +30,15 @@ def load_denoising_model(checkpoint_path: str = "checkpoints/denoising_model.pth
     """
 
     model = SimpleDenoiser()
-    if os.path.exists(checkpoint_path):
-        state = torch.load(checkpoint_path, map_location="cpu")
-        if isinstance(state, dict) and "state_dict" in state:
-            state = state["state_dict"]
-        model.load_state_dict(state)
-    else:
-        print(
-            f"Warning: {checkpoint_path} not found. Using an untrained SimpleDenoiser."
-            " See the README for instructions on downloading the pretrained model."
-        )
+if os.path.exists(checkpoint_path):
+    state = torch.load(checkpoint_path, map_location="cpu")
+    if isinstance(state, dict) and "state_dict" in state:
+        state = state["state_dict"]
+    model.load_state_dict(state)
+else:
+    raise FileNotFoundError(
+        f"Checkpoint not found: {checkpoint_path}. "
+        "See README.md for instructions on downloading the pretrained model."
+    )
+
     return model

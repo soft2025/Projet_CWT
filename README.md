@@ -68,6 +68,7 @@ The trained model is saved to `<output-dir>/model.pth`.
 The script will train a Swin Transformer on the dataset and evaluate it on a
 held‑out test set.
 
+
 ### Pretrained denoising model
 
 The dataset generation utilities rely on a small denoising network whose
